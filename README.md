@@ -376,5 +376,5 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 ---
 
 <div align="center">
-  <sub>Engineered with ❤️ for Rishihood University by <b>Oreo</b></sub>
+  <sub>Engineered with ❤️ by <b>Viraj Salunkhe</b></sub>
 </div>
