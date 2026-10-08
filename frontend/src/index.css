@@ -1,0 +1,117 @@
+/* ============================================================
+   Campus Recover — Global Styles
+   ============================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---- Base Layer ---- */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-surface-50 text-surface-900 font-sans;
+    min-height: 100vh;
+  }
+
+  /* Dark mode body */
+  .dark body {
+    @apply bg-surface-950 text-surface-100;
+  }
+
+  /* Selection styling */
+  ::selection {
+    @apply bg-primary-200 text-primary-900;
+  }
+
+  .dark ::selection {
+    @apply bg-primary-800 text-primary-100;
+  }
+}
+
+/* ---- Component Layer ---- */
+@layer components {
+  /* Glass card effect */
+  .glass {
+    @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-glass;
+  }
+
+  .dark .glass {
+    @apply bg-surface-900/70 border-surface-700/30;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-accent-500;
+  }
+
+  .dark .gradient-text {
+    @apply from-primary-400 to-accent-400;
+  }
+
+  /* Primary gradient background */
+  .gradient-primary {
+    @apply bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900;
+  }
+
+  /* Recovery score badge colors */
+  .score-high {
+    @apply bg-accent-500/10 text-accent-600 border-accent-500/20;
+  }
+
+  .score-medium {
+    @apply bg-warning-500/10 text-warning-600 border-warning-500/20;
+  }
+
+  .score-low {
+    @apply bg-danger-500/10 text-danger-600 border-danger-500/20;
+  }
+
+  /* Skeleton loader */
+  .skeleton {
+    @apply bg-surface-200 animate-pulse rounded-lg;
+  }
+
+  .dark .skeleton {
+    @apply bg-surface-800;
+  }
+}
+
+/* ---- Utility Layer ---- */
+@layer utilities {
+  /* Hide scrollbar but keep scroll functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Focus ring for accessibility */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-2;
+  }
+
+  .dark .focus-ring {
+    @apply focus:ring-offset-surface-900;
+  }
+}
+
+/* ---- Leaflet overrides ---- */
+.leaflet-container {
+  @apply rounded-xl;
+  font-family: inherit !important;
+}
