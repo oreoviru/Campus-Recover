@@ -22,6 +22,11 @@ from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.api.v1.items import router as items_router
 from app.api.v1.auth import router as auth_router
+from app.api.v1.upload import router as upload_router
+from app.api.v1.locations import router as locations_router
+from app.api.v1.matches import router as matches_router
+from app.api.v1.claims import router as claims_router
+from app.api.v1.notifications import router as notifications_router
 
 
 @asynccontextmanager
@@ -137,7 +142,17 @@ async def root():
 # Register under standard /api/v1 prefix
 app.include_router(auth_router, prefix=settings.api_prefix)
 app.include_router(items_router, prefix=settings.api_prefix)
+app.include_router(upload_router, prefix=settings.api_prefix)
+app.include_router(locations_router, prefix=settings.api_prefix)
+app.include_router(matches_router, prefix=settings.api_prefix)
+app.include_router(claims_router, prefix=settings.api_prefix)
+app.include_router(notifications_router, prefix=settings.api_prefix)
 
 # Also expose direct routes for standard REST endpoints
 app.include_router(auth_router, prefix="")
 app.include_router(items_router, prefix="")
+app.include_router(upload_router, prefix="")
+app.include_router(locations_router, prefix="")
+app.include_router(matches_router, prefix="")
+app.include_router(claims_router, prefix="")
+app.include_router(notifications_router, prefix="")

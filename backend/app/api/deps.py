@@ -77,6 +77,27 @@ def get_current_user(
     return user
 
 
+def get_optional_current_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    db: Session = Depends(get_db),
+) -> Optional[User]:
+    """
+    Extract authenticated user if Bearer token is present, else None.
+    Allows public endpoints to adapt responses based on viewer identity.
+    """
+    if not credentials or not credentials.credentials:
+        return None
+    try:
+        payload = decode_access_token(credentials.credentials)
+        user_id_str = payload.get("sub")
+        if not user_id_str:
+            return None
+        user = auth_service.get_user_by_id(db, uuid.UUID(user_id_str))
+        return user if user and user.is_active else None
+    except Exception:
+        return None
+
+
 def require_roles(*allowed_roles: UserRole) -> Callable[[User], User]:
     """
     Factory creating a role-enforcement dependency.

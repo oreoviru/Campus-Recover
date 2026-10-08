@@ -3,10 +3,11 @@
  */
 
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import apiClient from "@/api/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ApiResponse } from "@/types";
-import { ShieldCheck, Users, ShieldAlert, CheckCircle, Database } from "lucide-react";
+import { ShieldCheck, Users, ShieldAlert, CheckCircle, Database, ArrowRight } from "lucide-react";
 
 export const AdminDashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -94,11 +95,21 @@ export const AdminDashboardPage: React.FC = () => {
           <h3 className="text-white font-semibold mb-1">User Management</h3>
           <p className="text-surface-400 text-xs">Review student accounts, deactivate fraudulent profiles, manage roles.</p>
         </div>
-        <div className="bg-surface-900/50 border border-surface-800 p-6 rounded-2xl">
-          <ShieldAlert className="w-8 h-8 text-warning-400 mb-3" />
-          <h3 className="text-white font-semibold mb-1">Claim Moderation</h3>
-          <p className="text-surface-400 text-xs">Review disputes, verify evidence, approve ownership transfers.</p>
-        </div>
+        <Link
+          to="/admin/claims"
+          className="bg-surface-900/50 hover:bg-surface-900/80 border border-surface-800 hover:border-warning-500/40 p-6 rounded-2xl transition group block"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <ShieldAlert className="w-8 h-8 text-warning-400" />
+            <ArrowRight className="w-4 h-4 text-surface-500 group-hover:text-warning-400 group-hover:translate-x-0.5 transition-all" />
+          </div>
+          <h3 className="text-white font-semibold mb-1 group-hover:text-warning-300 transition">
+            Claim Moderation & Verification
+          </h3>
+          <p className="text-surface-400 text-xs">
+            Review disputes, inspect verification proof, prevent fraud, and approve custody handovers.
+          </p>
+        </Link>
         <div className="bg-surface-900/50 border border-surface-800 p-6 rounded-2xl">
           <Database className="w-8 h-8 text-accent-400 mb-3" />
           <h3 className="text-white font-semibold mb-1">Campus Locations</h3>

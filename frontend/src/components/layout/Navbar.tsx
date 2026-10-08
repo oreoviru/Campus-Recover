@@ -17,11 +17,16 @@ import {
   Search,
   HelpCircle,
   PackagePlus,
+  Bell,
+  Compass,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
+import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
+import { useNotifications } from "@/store/NotificationContext";
 
 export const Navbar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { unreadCount } = useNotifications();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -81,6 +86,17 @@ export const Navbar: React.FC = () => {
               Browse Registry
             </Link>
 
+            <Link
+              to="/map"
+              className={`px-3 py-2 rounded-xl text-sm font-medium transition ${
+                isActive("/map")
+                  ? "bg-surface-850 text-white shadow-sm"
+                  : "text-surface-400 hover:text-white hover:bg-surface-900"
+              }`}
+            >
+              Campus Map
+            </Link>
+
             {isAuthenticated && (
               <Link
                 to="/dashboard"
@@ -115,6 +131,9 @@ export const Navbar: React.FC = () => {
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated && user ? (
               <div className="flex items-center gap-3">
+                {/* Notification Dropdown Bell */}
+                <NotificationDropdown />
+
                 {/* User Info & Role Badge */}
                 <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-surface-900/80 border border-surface-800">
                   <div className="w-7 h-7 rounded-lg bg-surface-800 flex items-center justify-center text-primary-400">
@@ -226,6 +245,15 @@ export const Navbar: React.FC = () => {
               <span>Browse Items</span>
             </Link>
 
+            <Link
+              to="/map"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-surface-300 hover:bg-surface-900 hover:text-white"
+            >
+              <Compass className="w-5 h-5 text-primary-400" />
+              <span>Campus Map</span>
+            </Link>
+
             {isAuthenticated ? (
               <>
                 <Link
@@ -253,6 +281,22 @@ export const Navbar: React.FC = () => {
                 >
                   <PackagePlus className="w-5 h-5 text-accent-400" />
                   <span>Report Found Item</span>
+                </Link>
+
+                <Link
+                  to="/notifications"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-surface-300 hover:bg-surface-900 hover:text-white"
+                >
+                  <div className="flex items-center gap-3">
+                    <Bell className="w-5 h-5 text-primary-400" />
+                    <span>Notifications</span>
+                  </div>
+                  {unreadCount > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                      {unreadCount}
+                    </span>
+                  )}
                 </Link>
 
                 {user?.role === UserRole.ADMIN && (

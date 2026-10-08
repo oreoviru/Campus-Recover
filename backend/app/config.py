@@ -36,7 +36,7 @@ class Settings(BaseSettings):
 
     # --- Security ---
     allowed_origins: str = "http://localhost:5173"
-    allowed_email_domains: str = "student.university.edu,university.edu"
+    allowed_email_domains: str = "student.university.edu.in,university.edu.in"
 
     # --- Storage ---
     storage_backend: str = "local"
@@ -45,14 +45,18 @@ class Settings(BaseSettings):
     allowed_file_types: str = "image/jpeg,image/png,image/webp"
 
     # --- AI Matching ---
+    # ai_image_model supports:
+    #   - 'clip-ViT-B-32' (standard CLIP 512-dim embedding model)
+    #   - 'openai/clip-vit-base-patch32' (HuggingFace CLIP base patch 32)
+    #   - 'lightweight' (fast zero-download CV spatial color/gradient visual descriptor)
     ai_text_model: str = "sentence-transformers/all-MiniLM-L6-v2"
-    ai_image_model: str = "openai/clip-vit-base-patch32"
-    match_threshold: float = 0.40
+    ai_image_model: str = "clip-ViT-B-32"
+    match_threshold: float = 0.45
     text_weight: float = 0.30
-    image_weight: float = 0.25
+    image_weight: float = 0.30
     location_weight: float = 0.20
     time_weight: float = 0.10
-    attribute_weight: float = 0.15
+    attribute_weight: float = 0.10
 
     # --- Location Thresholds (meters) ---
     location_very_high: int = 50

@@ -1,5 +1,7 @@
 """
 Campus Recover — Items API Routes
+
+Authenticated CRUD for lost & found item reports.
 """
 
 import math
@@ -10,7 +12,8 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db
+from app.api.deps import get_db, get_current_user
+from app.models.user import User
 from app.models.enums import ItemType, ItemStatus, ItemCategory
 from app.schemas.item import ItemCreate, ItemUpdate, ItemResponse
 from app.schemas.common import ApiResponse, PaginationMeta
@@ -28,11 +31,15 @@ router = APIRouter(prefix="/items", tags=["Items"])
 def create_item(
     item_in: ItemCreate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Register a new item report (LOST or FOUND).
+    The user_id is automatically set from the authenticated user's JWT.
     For found items, optional private verification questions and answers can be submitted.
     """
+    # Force user_id from the authenticated session
+    item_in.user_id = current_user.id
     created_item = item_service.create_item(db=db, item_in=item_in)
     return ApiResponse(
         success=True,
@@ -62,6 +69,7 @@ def list_items(
 ):
     """
     Search and filter lost & found items.
+    This is a PUBLIC endpoint (no auth required) so anyone can browse.
     Supports full pagination, multi-field filtering, and custom sorting.
     """
     items, total = item_service.list_items(
@@ -75,6 +83,45 @@ def list_items(
         date_to=date_to,
         sort_by=sort_by,
         sort_order=sort_order,
+        page=page,
+        per_page=per_page,
+    )
+
+    total_pages = math.ceil(total / per_page) if per_page > 0 else 0
+
+    return ApiResponse(
+        success=True,
+        data=[ItemResponse.from_orm_item(item) for item in items],
+        meta=PaginationMeta(
+            page=page,
+            per_page=per_page,
+            total=total,
+            total_pages=total_pages,
+        ),
+    )
+
+
+@router.get(
+    "/my-reports",
+    response_model=ApiResponse[List[ItemResponse]],
+    summary="List items reported by the current user",
+)
+def list_my_reports(
+    type: Optional[ItemType] = Query(None, description="Filter by LOST or FOUND"),
+    status_filter: Optional[ItemStatus] = Query(None, alias="status", description="Filter by item status"),
+    page: int = Query(1, ge=1, description="Page number"),
+    per_page: int = Query(20, ge=1, le=100, description="Items per page"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Retrieve items reported by the currently authenticated user.
+    """
+    items, total = item_service.list_items(
+        db=db,
+        item_type=type,
+        status=status_filter,
+        user_id=current_user.id,
         page=page,
         per_page=per_page,
     )
@@ -128,17 +175,27 @@ def update_item(
     item_id: uuid.UUID,
     item_in: ItemUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Update item details, characteristics, or status.
+    Only the item owner or an admin can update.
     """
-    updated = item_service.update_item(db=db, item_id=item_id, item_in=item_in)
-    if not updated:
+    existing = item_service.get_item(db=db, item_id=item_id)
+    if not existing:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Item with ID '{item_id}' not found.",
         )
 
+    # Authorization: only owner or admin
+    if existing.user_id != current_user.id and current_user.role.value != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to update this item.",
+        )
+
+    updated = item_service.update_item(db=db, item_id=item_id, item_in=item_in)
     return ApiResponse(
         success=True,
         data=ItemResponse.from_orm_item(updated),
@@ -154,16 +211,27 @@ def update_item(
 def delete_item(
     item_id: uuid.UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Delete an item report.
+    Only the item owner or an admin can delete.
     """
-    deleted = item_service.delete_item(db=db, item_id=item_id)
-    if not deleted:
+    existing = item_service.get_item(db=db, item_id=item_id)
+    if not existing:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Item with ID '{item_id}' not found.",
         )
+
+    # Authorization: only owner or admin
+    if existing.user_id != current_user.id and current_user.role.value != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to delete this item.",
+        )
+
+    item_service.delete_item(db=db, item_id=item_id)
 
     return ApiResponse(
         success=True,

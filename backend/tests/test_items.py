@@ -1,9 +1,33 @@
-"""
-Campus Recover — Item CRUD API Integration Tests
-"""
-
 import uuid
 from datetime import datetime, timezone
+import pytest
+
+from app.models.user import User
+from app.models.enums import UserRole
+from app.auth.password import hash_password
+from app.api.deps import get_current_user
+from app.main import app
+
+
+@pytest.fixture(autouse=True)
+def setup_auth(db_session):
+    """Automatically authenticate items endpoints with a test student user."""
+    test_user = User(
+        id=uuid.uuid4(),
+        name="Test Student",
+        email=f"test_{uuid.uuid4().hex[:6]}@student.university.edu",
+        password_hash=hash_password("Password123!"),
+        role=UserRole.STUDENT,
+        is_active=True,
+    )
+    db_session.add(test_user)
+    db_session.commit()
+    db_session.refresh(test_user)
+
+    app.dependency_overrides[get_current_user] = lambda: test_user
+    yield test_user
+    app.dependency_overrides.pop(get_current_user, None)
+
 
 
 def test_create_lost_item(client):

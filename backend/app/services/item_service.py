@@ -56,6 +56,16 @@ class ItemService:
         db.add(db_item)
         db.commit()
         db.refresh(db_item)
+
+        # Trigger AI Matching Engine (Independent Service - not in API routes)
+        try:
+            from app.ai.engine import matching_engine_service
+            matching_engine_service.process_new_item(db=db, new_item=db_item)
+        except Exception as e:
+            # Matching runs asynchronously/robustly without failing item creation
+            import logging
+            logging.getLogger(__name__).error(f"Error executing AI matching engine for item {db_item.id}: {e}")
+
         return db_item
 
     @staticmethod
@@ -85,6 +95,7 @@ class ItemService:
         sort_order: str = "desc",
         page: int = 1,
         per_page: int = 20,
+        user_id: Optional[uuid.UUID] = None,
     ) -> Tuple[List[Item], int]:
         """
         List items with comprehensive filters, search, sorting, and pagination.
@@ -99,6 +110,9 @@ class ItemService:
 
         # Filter criteria
         filters = []
+
+        if user_id:
+            filters.append(Item.user_id == user_id)
 
         if item_type:
             filters.append(Item.type == item_type)
@@ -155,12 +169,26 @@ class ItemService:
             return None
 
         update_data = item_in.model_dump(exclude_unset=True)
+        if "title" in update_data or "description" in update_data:
+            db_item.text_embedding = None
+        if "image_url" in update_data:
+            db_item.image_embedding = None
+
         for field, value in update_data.items():
             setattr(db_item, field, value)
 
         db_item.updated_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(db_item)
+
+        # Rerun matching if active
+        try:
+            from app.ai.engine import matching_engine_service
+            if db_item.status == ItemStatus.ACTIVE:
+                matching_engine_service.process_new_item(db=db, new_item=db_item)
+        except Exception:
+            pass
+
         return db_item
 
     @staticmethod

@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/store/NotificationContext";
 import { UserRole } from "@/types";
 import {
   LayoutDashboard,
@@ -10,9 +11,12 @@ import {
   Sparkles,
   FileText,
   ShieldCheck,
+  ShieldAlert,
+  PackageCheck,
   Bell,
   ChevronLeft,
   ChevronRight,
+  Compass,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -28,6 +32,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const location = useLocation();
   const { user } = useAuth();
+  const { unreadCount } = useNotifications();
 
   const navItems = [
     {
@@ -39,6 +44,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: "Browse Registry",
       to: "/browse",
       icon: <Search className="w-5 h-5 shrink-0" />,
+    },
+    {
+      label: "Campus Map",
+      to: "/map",
+      icon: <Compass className="w-5 h-5 shrink-0 text-primary-400" />,
+      badge: "Map",
     },
     {
       label: "Report Lost Item",
@@ -56,6 +67,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: <FileText className="w-5 h-5 shrink-0" />,
     },
     {
+      label: "My Claims",
+      to: "/my-claims",
+      icon: <PackageCheck className="w-5 h-5 shrink-0" />,
+    },
+    {
       label: "AI Matches",
       to: "/matches",
       icon: <Sparkles className="w-5 h-5 shrink-0 text-accent-400" />,
@@ -65,6 +81,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: "Notifications",
       to: "/notifications",
       icon: <Bell className="w-5 h-5 shrink-0" />,
+      badge: unreadCount > 0 ? (unreadCount > 99 ? "99+" : `${unreadCount}`) : undefined,
     },
   ];
 
@@ -74,6 +91,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       to: "/admin",
       icon: <ShieldCheck className="w-5 h-5 shrink-0 text-danger-400" />,
       badge: "Staff",
+    });
+    navItems.push({
+      label: "Claims Review",
+      to: "/admin/claims",
+      icon: <ShieldAlert className="w-5 h-5 shrink-0 text-warning-400" />,
+      badge: "Admin",
     });
   }
 

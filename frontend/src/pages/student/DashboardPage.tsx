@@ -2,7 +2,7 @@
  * Campus Recover — Student Dashboard Page
  */
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,15 +16,62 @@ import {
   Clock,
   Layers,
   ArrowRight,
-  Bell,
+  ArrowUpRight,
 } from "lucide-react";
+import { itemsApi } from "@/api/items";
+import { matchesApi } from "@/api/matches";
+import { Item, ItemType, ItemStatus, Match } from "@/types";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
+  const [reports, setReports] = useState<Item[]>([]);
+  const [loadingReports, setLoadingReports] = useState(true);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [loadingMatches, setLoadingMatches] = useState(true);
+
+  useEffect(() => {
+    async function loadReports() {
+      try {
+        setLoadingReports(true);
+        const res = await itemsApi.getMyReports({ per_page: 5 });
+        if (res.success && res.data) {
+          setReports(res.data);
+        }
+      } catch (e) {
+        console.error("Could not fetch reports for dashboard", e);
+      } finally {
+        setLoadingReports(false);
+      }
+    }
+
+    async function loadMatches() {
+      try {
+        setLoadingMatches(true);
+        const res = await matchesApi.getUserMatches(undefined, 1, 5);
+        if (res.success && res.data) {
+          setMatches(res.data);
+        }
+      } catch (e) {
+        console.error("Could not fetch matches for dashboard", e);
+      } finally {
+        setLoadingMatches(false);
+      }
+    }
+
+    loadReports();
+    loadMatches();
+  }, []);
+
+  const lostCount = reports.filter((r) => r.type === ItemType.LOST).length;
+  const foundCount = reports.filter((r) => r.type === ItemType.FOUND).length;
+  const recoveredCount = reports.filter(
+    (r) => r.status === ItemStatus.RECOVERED
+  ).length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -89,26 +136,26 @@ export const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           label="My Lost Reports"
-          value="0"
+          value={loadingReports ? "..." : lostCount.toString()}
           icon={<Clock className="w-5 h-5 text-primary-400" />}
           subtext="Active searches"
         />
         <StatCard
           label="My Found Reports"
-          value="0"
+          value={loadingReports ? "..." : foundCount.toString()}
           icon={<Layers className="w-5 h-5 text-warning-400" />}
           subtext="In custody"
         />
         <StatCard
           label="AI Match Candidates"
-          value="0"
+          value={loadingMatches ? "..." : matches.length.toString()}
           icon={<Sparkles className="w-5 h-5 text-accent-400" />}
           subtext="High recovery score"
         />
         <StatCard
           label="Items Recovered"
-          value="0"
-          icon={<CheckCircle2 className="w-5 h-5 text-accent-400" />}
+          value={loadingReports ? "..." : recoveredCount.toString()}
+          icon={<CheckCircle2 className="w-5 h-5 text-emerald-400" />}
           subtext="Verified return"
         />
       </div>
@@ -149,33 +196,102 @@ export const DashboardPage: React.FC = () => {
                 accent="warning"
               />
               <ActionCard
-                title="View Match Queue"
-                description="Check potential algorithmic matches calculated by Sentence-Transformers."
-                icon={<Sparkles className="w-6 h-6 text-primary-400" />}
-                badge="Neural"
-                to="/matches"
+                title="My Submitted Reports"
+                description="Manage reports, mark items as recovered, or edit details."
+                icon={<Layers className="w-6 h-6 text-primary-400" />}
+                badge="Manage"
+                to="/my-reports"
                 accent="primary"
               />
             </div>
           </div>
 
-          {/* Activity / Reports Empty State */}
+          {/* Activity / Reports Section */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">My Recent Reports</CardTitle>
-              <CardDescription>
-                Track status updates and automated match alerts for items you have reported.
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">My Recent Reports</CardTitle>
+                <CardDescription>
+                  Track status updates and listings you have submitted.
+                </CardDescription>
+              </div>
+              {reports.length > 0 && (
+                <Link
+                  to="/my-reports"
+                  className="text-xs text-primary-400 hover:text-primary-300 font-medium flex items-center gap-1"
+                >
+                  View All ({reports.length})
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              )}
             </CardHeader>
             <CardContent>
-              <EmptyState
-                icon={<HelpCircle className="w-8 h-8 text-surface-500" />}
-                title="No active reports yet"
-                description="You haven't reported any lost or found items. Submit a report to begin automated matching."
-                actionLabel="Report an Item"
-                onAction={() => {}}
-                className="py-10"
-              />
+              {loadingReports ? (
+                <div className="space-y-3">
+                  <Skeleton className="w-full h-14 rounded-xl" />
+                  <Skeleton className="w-full h-14 rounded-xl" />
+                </div>
+              ) : reports.length === 0 ? (
+                <EmptyState
+                  icon={<HelpCircle className="w-8 h-8 text-surface-500" />}
+                  title="No active reports yet"
+                  description="You haven't reported any lost or found items. Submit a report to begin automated matching."
+                  actionLabel="Report an Item"
+                  onAction={() => (window.location.href = "/report-lost")}
+                  className="py-10"
+                />
+              ) : (
+                <div className="space-y-3">
+                  {reports.map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-3.5 rounded-xl bg-surface-950 border border-surface-850 flex items-center justify-between gap-4 hover:border-surface-700 transition"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Badge
+                          variant={
+                            item.type === ItemType.FOUND ? "accent" : "warning"
+                          }
+                          size="sm"
+                        >
+                          {item.type}
+                        </Badge>
+                        <div className="min-w-0">
+                          <h4 className="text-sm font-semibold text-white truncate">
+                            {item.title}
+                          </h4>
+                          <span className="text-xs text-surface-400 block truncate">
+                            {item.category} •{" "}
+                            {item.location_name ||
+                              item.campus_location?.name ||
+                              "Campus"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 shrink-0">
+                        <Badge
+                          variant={
+                            item.status === ItemStatus.RECOVERED
+                              ? "accent"
+                              : "surface"
+                          }
+                          size="sm"
+                        >
+                          {item.status}
+                        </Badge>
+                        <Link
+                          to={`/items/${item.id}`}
+                          className="p-1 text-surface-400 hover:text-white transition"
+                          title="View Details"
+                        >
+                          <ArrowUpRight className="w-4 h-4" />
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -187,22 +303,70 @@ export const DashboardPage: React.FC = () => {
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <div>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-accent-400" />
+                  <Sparkles className="w-4 h-4 text-accent-400" />
                   Live Match Feed
                 </CardTitle>
-                <CardDescription>Real-time algorithm updates</CardDescription>
+                <CardDescription>Multi-modal algorithm pairings</CardDescription>
               </div>
-              <Badge variant="accent" size="sm">
-                0 New
+              <Badge variant={matches.length > 0 ? "accent" : "surface"} size="sm">
+                {matches.length} {matches.length === 1 ? "Match" : "Matches"}
               </Badge>
             </CardHeader>
             <CardContent>
-              <EmptyState
-                icon={<Sparkles className="w-6 h-6 text-accent-400" />}
-                title="All caught up"
-                description="No matching reports detected at this time. Our background AI scanner will alert you immediately."
-                className="py-8 bg-transparent border-0"
-              />
+              {loadingMatches ? (
+                <div className="space-y-3 py-2">
+                  <Skeleton className="h-16 w-full rounded-xl" />
+                  <Skeleton className="h-16 w-full rounded-xl" />
+                </div>
+              ) : matches.length === 0 ? (
+                <EmptyState
+                  icon={<Sparkles className="w-6 h-6 text-accent-400" />}
+                  title="All caught up"
+                  description="No matching reports detected at this time. Our background AI scanner will alert you immediately."
+                  className="py-8 bg-transparent border-0"
+                />
+              ) : (
+                <div className="space-y-3 pt-1">
+                  {matches.slice(0, 3).map((match) => {
+                    const counterpart =
+                      match.lost_item?.user_id === user?.id
+                        ? match.found_item
+                        : match.lost_item;
+                    const itemToShow = counterpart || match.found_item || match.lost_item;
+                    const score = Math.round(match.overall_score * 100);
+
+                    return (
+                      <Link
+                        key={match.id}
+                        to="/matches"
+                        className="block p-3 rounded-xl bg-surface-900/80 border border-surface-800 hover:border-surface-700 hover:bg-surface-850 transition group"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <h5 className="text-xs font-bold text-white group-hover:text-primary-300 truncate">
+                              {itemToShow?.title || "Match Candidate"}
+                            </h5>
+                            <p className="text-[11px] text-surface-400 truncate mt-0.5">
+                              {itemToShow?.category} • {itemToShow?.location_name || "Campus"}
+                            </p>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-primary-500/10 text-primary-400 border border-primary-500/20">
+                              {score}%
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+
+                  <Link to="/matches" className="block pt-2">
+                    <Button variant="outline" size="sm" className="w-full text-xs">
+                      View All {matches.length} Matches & Breakdown <ArrowRight className="w-3 h-3 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -299,3 +463,5 @@ function ActionCard({
     </Link>
   );
 }
+
+export default DashboardPage;
