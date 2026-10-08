@@ -4,19 +4,23 @@ Campus Recover — FastAPI Application Entry Point
 This is the root of the backend application. It:
 1. Creates the FastAPI app instance
 2. Configures CORS middleware
-3. Registers API routers
-4. Provides health check endpoint
+3. Configures standard error response handlers
+4. Registers API routers (Items CRUD for Phase 2)
+5. Provides health check and root endpoints
 """
 
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException, status
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
+from app.api.v1.items import router as items_router
 
 
 @asynccontextmanager
@@ -40,7 +44,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.app_name,
     description="AI-Powered Campus Lost & Found Platform",
-    version="0.1.0",
+    version="0.2.0",
     docs_url="/docs" if settings.debug else None,
     redoc_url="/redoc" if settings.debug else None,
     lifespan=lifespan,
@@ -65,6 +69,44 @@ if settings.is_development:
     )
 
 
+# ---- Global Exception Handlers (Standard Error Envelope) ----
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Format HTTPExceptions into standard ApiErrorResponse."""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "success": False,
+            "error": {
+                "code": f"HTTP_{exc.status_code}",
+                "message": exc.detail,
+                "details": None,
+            },
+        },
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Format Pydantic validation errors cleanly."""
+    errors = {}
+    for err in exc.errors():
+        field = ".".join(str(loc) for loc in err["loc"] if loc != "body")
+        errors[field] = err["msg"]
+
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "success": False,
+            "error": {
+                "code": "VALIDATION_ERROR",
+                "message": "Input validation failed.",
+                "details": errors,
+            },
+        },
+    )
+
+
 # ---- Health Check ----
 @app.get("/health", tags=["System"])
 async def health_check():
@@ -83,7 +125,7 @@ async def root():
     """Root endpoint — API information."""
     return {
         "app": settings.app_name,
-        "version": "0.1.0",
+        "version": "0.2.0",
         "description": "AI-Powered Campus Lost & Found Platform",
         "docs": "/docs",
         "health": "/health",
@@ -91,7 +133,8 @@ async def root():
 
 
 # ---- API Router Registration ----
-# Routers will be registered here as they are built in subsequent phases.
-# Example (Phase 3):
-#   from app.api.v1 import auth
-#   app.include_router(auth.router, prefix=settings.api_prefix)
+# Register under standard /api/v1 prefix
+app.include_router(items_router, prefix=settings.api_prefix)
+
+# Also expose direct /items routes for standard REST endpoints
+app.include_router(items_router, prefix="")

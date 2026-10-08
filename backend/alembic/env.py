@@ -25,8 +25,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Target metadata for 'autogenerate' support
-# Import all models here so they register with Base.metadata
-# (Models will be added in Phase 2)
+import app.models  # noqa: F401 - ensures all models register with Base.metadata
 target_metadata = Base.metadata
 
 

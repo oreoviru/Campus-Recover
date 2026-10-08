@@ -3,6 +3,7 @@ Campus Recover — Database Session Management
 
 Provides the SQLAlchemy engine, session factory, and Base class.
 All models inherit from Base. All routes use get_db() for sessions.
+Compatible with PostgreSQL (production/docker) and SQLite (testing/local fallback).
 """
 
 from sqlalchemy import create_engine
@@ -10,15 +11,20 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.config import settings
 
+# Engine configuration depending on DB dialect
+engine_kwargs = {
+    "echo": settings.debug,
+}
+
+if settings.database_url.startswith("sqlite"):
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    engine_kwargs["pool_pre_ping"] = True
+    engine_kwargs["pool_size"] = 10
+    engine_kwargs["max_overflow"] = 20
 
 # Create the SQLAlchemy engine
-engine = create_engine(
-    settings.database_url,
-    echo=settings.debug,  # Log SQL in dev mode
-    pool_pre_ping=True,   # Verify connections before use
-    pool_size=10,
-    max_overflow=20,
-)
+engine = create_engine(settings.database_url, **engine_kwargs)
 
 # Session factory — each request gets its own session
 SessionLocal = sessionmaker(
