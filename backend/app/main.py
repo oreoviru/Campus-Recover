@@ -21,6 +21,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.api.v1.items import router as items_router
+from app.api.v1.auth import router as auth_router
 
 
 @asynccontextmanager
@@ -134,7 +135,9 @@ async def root():
 
 # ---- API Router Registration ----
 # Register under standard /api/v1 prefix
+app.include_router(auth_router, prefix=settings.api_prefix)
 app.include_router(items_router, prefix=settings.api_prefix)
 
-# Also expose direct /items routes for standard REST endpoints
+# Also expose direct routes for standard REST endpoints
+app.include_router(auth_router, prefix="")
 app.include_router(items_router, prefix="")

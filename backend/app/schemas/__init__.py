@@ -9,6 +9,7 @@ from app.schemas.common import (
     ApiErrorResponse,
 )
 from app.schemas.user import UserSummary, UserResponse
+from app.schemas.auth import UserRegister, UserLogin, Token, TokenData
 from app.schemas.location import (
     CampusLocationBase,
     CampusLocationCreate,
@@ -30,6 +31,10 @@ __all__ = [
     "ApiErrorResponse",
     "UserSummary",
     "UserResponse",
+    "UserRegister",
+    "UserLogin",
+    "Token",
+    "TokenData",
     "CampusLocationBase",
     "CampusLocationCreate",
     "CampusLocationUpdate",
