@@ -27,6 +27,7 @@ from app.api.v1.locations import router as locations_router
 from app.api.v1.matches import router as matches_router
 from app.api.v1.claims import router as claims_router
 from app.api.v1.notifications import router as notifications_router
+from app.api.v1.admin import router as admin_router
 
 
 @asynccontextmanager
@@ -147,6 +148,7 @@ app.include_router(locations_router, prefix=settings.api_prefix)
 app.include_router(matches_router, prefix=settings.api_prefix)
 app.include_router(claims_router, prefix=settings.api_prefix)
 app.include_router(notifications_router, prefix=settings.api_prefix)
+app.include_router(admin_router, prefix=settings.api_prefix)
 
 # Also expose direct routes for standard REST endpoints
 app.include_router(auth_router, prefix="")
@@ -156,3 +158,4 @@ app.include_router(locations_router, prefix="")
 app.include_router(matches_router, prefix="")
 app.include_router(claims_router, prefix="")
 app.include_router(notifications_router, prefix="")
+app.include_router(admin_router, prefix="")

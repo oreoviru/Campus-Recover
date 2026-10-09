@@ -12,3 +12,4 @@ export * from "./match";
 export * from "./claim";
 export * from "./notification";
 export * from "./location";
+export * from "./admin";
