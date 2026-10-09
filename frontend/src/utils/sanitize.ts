@@ -15,10 +15,16 @@ export function sanitizeInput(input: string | null | undefined): string {
     .trim();
 }
 
-/**
- * Validates institutional university email format.
- */
-export function isInstitutionalEmail(email: string, allowedDomains: string[] = ["university.edu.in", "student.university.edu.in", "student.university.edu", "university.edu"]): boolean {
+export function isInstitutionalEmail(
+  email: string,
+  allowedDomains: string[] = [
+    "rishihood.edu.in",
+    "nst.rishihood.edu.in",
+    "university.edu.in",
+    "student.university.edu",
+    "university.edu",
+  ]
+): boolean {
   if (!email || !email.includes("@")) return false;
   const domain = email.split("@")[1].toLowerCase();
   return allowedDomains.some((d) => domain === d.toLowerCase() || domain.endsWith(`.${d.toLowerCase()}`));

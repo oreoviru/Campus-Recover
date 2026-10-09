@@ -13,6 +13,7 @@ import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
+import { isInstitutionalEmail } from "@/utils/sanitize";
 
 export const RegisterPage: React.FC = () => {
   const [name, setName] = useState("");
@@ -30,8 +31,8 @@ export const RegisterPage: React.FC = () => {
     e.preventDefault();
     setErrorMessage(null);
 
-    if (!email.includes("@")) {
-      setErrorMessage("Please enter a valid email address.");
+    if (!isInstitutionalEmail(email)) {
+      setErrorMessage("Please use your official college email (@nst.rishihood.edu.in or @rishihood.edu.in).");
       return;
     }
 
@@ -97,9 +98,9 @@ export const RegisterPage: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="jane.doe@student.university.edu"
+                placeholder="viraj.s26387@nst.rishihood.edu.in"
                 leftIcon={<Mail className="w-4 h-4" />}
-                helperText="Must be @student.university.edu or @university.edu"
+                helperText="Must be @nst.rishihood.edu.in or @rishihood.edu.in"
               />
 
               <Input

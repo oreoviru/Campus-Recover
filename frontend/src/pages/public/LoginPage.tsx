@@ -80,9 +80,9 @@ export const LoginPage: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@student.university.edu"
+                placeholder="viraj.s26387@nst.rishihood.edu.in"
                 leftIcon={<Mail className="w-4 h-4" />}
-                helperText="Must end in @student.university.edu or @university.edu"
+                helperText="Use your @nst.rishihood.edu.in or @rishihood.edu.in account"
               />
 
               <Input

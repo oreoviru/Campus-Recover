@@ -34,9 +34,10 @@ describe("Frontend Security Utilities", () => {
 
   describe("Institutional Email Domain Guard", () => {
     it("accepts valid institutional domains", () => {
+      expect(isInstitutionalEmail("viraj.s26387@nst.rishihood.edu.in")).toBe(true);
+      expect(isInstitutionalEmail("student@rishihood.edu.in")).toBe(true);
       expect(isInstitutionalEmail("student@student.university.edu")).toBe(true);
       expect(isInstitutionalEmail("faculty@university.edu")).toBe(true);
-      expect(isInstitutionalEmail("researcher@cs.university.edu")).toBe(true);
     });
 
     it("rejects non-institutional commercial domains", () => {

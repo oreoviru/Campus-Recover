@@ -37,7 +37,9 @@ class Settings(BaseSettings):
 
     # --- Security ---
     allowed_origins: str = "http://localhost:5173"
-    allowed_email_domains: str = "student.university.edu.in,university.edu.in"
+    allowed_email_domains: str = (
+        "rishihood.edu.in,nst.rishihood.edu.in,student.university.edu,university.edu"
+    )
     rate_limit_enabled: bool = True
     rate_limit_global_per_minute: int = 150
     rate_limit_login_per_minute: int = 10
