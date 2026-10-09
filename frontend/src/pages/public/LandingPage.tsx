@@ -14,7 +14,6 @@ import {
   ChevronDown,
   HelpCircle,
   PackagePlus,
-  Compass,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -97,10 +96,10 @@ export const LandingPage: React.FC = () => {
             </Link>
           </div>
           <div className="flex items-center justify-center gap-2 mb-12 text-sm text-surface-400">
-            <span>Prefer geospatial search?</span>
-            <Link to="/map" className="text-primary-400 hover:text-primary-300 font-semibold flex items-center gap-1 transition">
-              <Compass className="w-4 h-4" />
-              <span>Explore Interactive Campus Map &rarr;</span>
+            <span>Looking for an item?</span>
+            <Link to="/browse" className="text-primary-400 hover:text-primary-300 font-semibold flex items-center gap-1 transition">
+              <Search className="w-4 h-4" />
+              <span>Browse Active Campus Registry &rarr;</span>
             </Link>
           </div>
 

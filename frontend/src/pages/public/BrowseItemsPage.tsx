@@ -13,7 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Inbox,
-  Compass,
 } from "lucide-react";
 
 import { itemsApi } from "@/api/items";
@@ -164,14 +163,8 @@ export const BrowseItemsPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Quick Report & Map CTAs */}
+        {/* Quick Report CTAs */}
         <div className="flex flex-wrap items-center gap-3">
-          <Link to="/map">
-            <Button variant="secondary" className="border-primary-500/30 text-primary-300 hover:text-white">
-              <Compass className="w-4 h-4 mr-2 text-primary-400" />
-              Campus Map
-            </Button>
-          </Link>
           <Link to="/report-lost">
             <Button variant="secondary" className="border-surface-700">
               <HelpCircle className="w-4 h-4 mr-2 text-amber-400" />

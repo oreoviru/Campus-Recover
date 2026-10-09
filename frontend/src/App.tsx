@@ -14,7 +14,6 @@ import { LoginPage } from "@/pages/public/LoginPage";
 import { RegisterPage } from "@/pages/public/RegisterPage";
 import { BrowseItemsPage } from "@/pages/public/BrowseItemsPage";
 import { ItemDetailPage } from "@/pages/public/ItemDetailPage";
-import { CampusMapPage } from "@/pages/public/CampusMapPage";
 import { DashboardPage } from "@/pages/student/DashboardPage";
 import { ReportLostPage } from "@/pages/student/ReportLostPage";
 import { ReportFoundPage } from "@/pages/student/ReportFoundPage";
@@ -71,14 +70,6 @@ function App() {
           element={
             <AppLayout showSidebar={false}>
               <ItemDetailPage />
-            </AppLayout>
-          }
-        />
-        <Route
-          path="/map"
-          element={
-            <AppLayout showSidebar={false}>
-              <CampusMapPage />
             </AppLayout>
           }
         />

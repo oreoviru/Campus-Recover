@@ -18,7 +18,6 @@ import {
   HelpCircle,
   PackagePlus,
   Bell,
-  Compass,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
@@ -84,17 +83,6 @@ export const Navbar: React.FC = () => {
               }`}
             >
               Browse Registry
-            </Link>
-
-            <Link
-              to="/map"
-              className={`px-3 py-2 rounded-xl text-sm font-medium transition ${
-                isActive("/map")
-                  ? "bg-surface-850 text-white shadow-sm"
-                  : "text-surface-400 hover:text-white hover:bg-surface-900"
-              }`}
-            >
-              Campus Map
             </Link>
 
             {isAuthenticated && (
@@ -243,15 +231,6 @@ export const Navbar: React.FC = () => {
             >
               <Search className="w-5 h-5 text-accent-400" />
               <span>Browse Items</span>
-            </Link>
-
-            <Link
-              to="/map"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-surface-300 hover:bg-surface-900 hover:text-white"
-            >
-              <Compass className="w-5 h-5 text-primary-400" />
-              <span>Campus Map</span>
             </Link>
 
             {isAuthenticated ? (

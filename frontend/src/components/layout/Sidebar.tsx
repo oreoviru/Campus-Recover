@@ -16,7 +16,6 @@ import {
   Bell,
   ChevronLeft,
   ChevronRight,
-  Compass,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -44,12 +43,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: "Browse Registry",
       to: "/browse",
       icon: <Search className="w-5 h-5 shrink-0" />,
-    },
-    {
-      label: "Campus Map",
-      to: "/map",
-      icon: <Compass className="w-5 h-5 shrink-0 text-primary-400" />,
-      badge: "Map",
     },
     {
       label: "Report Lost Item",

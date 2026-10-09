@@ -491,12 +491,6 @@ export const AdminDashboardPage: React.FC = () => {
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-primary-400" : ""}`} />
               <span>Refresh Metrics</span>
             </Button>
-            <Link to="/map">
-              <Button variant="secondary" size="sm" className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                <span>Live Campus Map</span>
-              </Button>
-            </Link>
           </div>
         </div>
       </div>

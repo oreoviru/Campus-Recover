@@ -24,8 +24,6 @@ import {
   AlertTriangle,
   Check,
   Sparkles,
-  Compass,
-  ShieldAlert,
 } from "lucide-react";
 
 import { itemsApi } from "@/api/items";
@@ -38,7 +36,6 @@ import { Card } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Modal } from "@/components/ui/Modal";
 import { MatchCard } from "@/components/matches/MatchCard";
-import { CampusMap } from "@/components/map/CampusMap";
 
 export const ItemDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -519,15 +516,9 @@ export const ItemDetailPage: React.FC = () => {
 
           {/* Location Information Card */}
           <Card className="p-6 bg-surface-900/60 border-surface-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                <MapPin className="w-4 h-4 text-primary-400" />
-                <span>Location Details</span>
-              </div>
-              <Link to="/map" className="text-xs text-primary-400 hover:text-primary-300 font-medium flex items-center gap-1">
-                <Compass className="w-3.5 h-3.5" />
-                <span>Campus Map</span>
-              </Link>
+            <div className="flex items-center gap-2 text-sm font-semibold text-white">
+              <MapPin className="w-4 h-4 text-primary-400" />
+              <span>Location Details</span>
             </div>
 
             <div className="space-y-3 text-xs">
@@ -556,58 +547,6 @@ export const ItemDetailPage: React.FC = () => {
                   <span className="text-surface-200 block mt-0.5 font-medium">
                     {item.location_name}
                   </span>
-                </div>
-              )}
-
-              {/* Privacy Shield Notice for sensitive item */}
-              {["ELECTRONICS", "DOCUMENTS", "KEYS", "ACCESSORIES"].includes(item.category) &&
-                (!user || (user.id !== item.user_id && user.role !== UserRole.ADMIN)) && (
-                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] flex items-start gap-2">
-                    <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                    <span>
-                      <strong>Privacy Protected:</strong> Exact pin coordinates are generalized on public campus maps for personal security.
-                    </span>
-                  </div>
-                )}
-
-              {/* Mini Map preview if coordinates or campus location available */}
-              {(item.latitude || item.campus_location?.latitude) && (
-                <div className="pt-2 space-y-2">
-                  <CampusMap
-                    items={[
-                      {
-                        id: item.id,
-                        type: item.type,
-                        title: item.title,
-                        category: item.category,
-                        description: item.description,
-                        status: item.status,
-                        date_time: item.date_time,
-                        created_at: item.created_at,
-                        latitude: item.latitude || item.campus_location!.latitude,
-                        longitude: item.longitude || item.campus_location!.longitude,
-                        location_name: item.location_name || item.campus_location?.name,
-                        campus_location_name: item.campus_location?.name,
-                        is_generalized_location:
-                          ["ELECTRONICS", "DOCUMENTS", "KEYS", "ACCESSORIES"].includes(item.category) &&
-                          (!user || (user.id !== item.user_id && user.role !== UserRole.ADMIN)),
-                      },
-                    ]}
-                    selectedCenter={[
-                      item.latitude || item.campus_location!.latitude,
-                      item.longitude || item.campus_location!.longitude,
-                    ]}
-                    selectedZoom={17}
-                    showBuildings={false}
-                    showHotspots={false}
-                    className="h-44 w-full rounded-xl"
-                  />
-                  <Link to="/map" className="block">
-                    <Button variant="secondary" size="sm" className="w-full text-xs">
-                      <Compass className="w-3.5 h-3.5 mr-1.5 text-primary-400" />
-                      Explore Full Campus Map
-                    </Button>
-                  </Link>
                 </div>
               )}
             </div>

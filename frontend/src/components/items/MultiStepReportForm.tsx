@@ -24,7 +24,6 @@ import {
   PackageCheck,
   AlertCircle,
   Tag,
-  Compass,
 } from "lucide-react";
 
 import { itemsApi } from "@/api/items";
@@ -35,7 +34,6 @@ import {
   CampusLocation,
 } from "@/types";
 import { ImageUploader } from "./ImageUploader";
-import { LocationPicker } from "@/components/map/LocationPicker";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -533,31 +531,6 @@ export const MultiStepReportForm: React.FC<MultiStepReportFormProps> = ({
                       error={errors.location_name}
                     />
                   </div>
-                </div>
-
-                {/* Interactive Leaflet Location Picker */}
-                <div className="space-y-2 pt-1">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-surface-200 flex items-center gap-1.5">
-                      <Compass className="w-4 h-4 text-primary-400" />
-                      Pinpoint Location on Campus Map (Optional)
-                    </label>
-                    <span className="text-[11px] text-surface-400">
-                      Click the map to drop coordinates
-                    </span>
-                  </div>
-                  <LocationPicker
-                    initialLat={formData.latitude}
-                    initialLon={formData.longitude}
-                    campusLocations={locations}
-                    onSelectCoordinates={(lat, lon, nearestLoc) => {
-                      handleChange("latitude", lat);
-                      handleChange("longitude", lon);
-                      if (nearestLoc) {
-                        handleChange("campus_location_id", nearestLoc.id);
-                      }
-                    }}
-                  />
                 </div>
 
                 <div className="space-y-2">
