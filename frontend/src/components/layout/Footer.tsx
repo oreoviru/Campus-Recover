@@ -2,6 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Radar, Shield, Heart } from "lucide-react";
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 export const Footer: React.FC = () => {
   return (
     <footer className="bg-surface-950 border-t border-surface-850 mt-auto">
@@ -93,7 +95,7 @@ export const Footer: React.FC = () => {
 
         <div className="pt-8 border-t border-surface-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-surface-500">
           <div>
-            © {new Date().getFullYear()} Campus Recover. Designed for Higher Education.
+            © {CURRENT_YEAR} Campus Recover. Designed for Higher Education.
           </div>
           <div className="flex items-center gap-1">
             <span>Powered by neural matching and semantic AI</span>

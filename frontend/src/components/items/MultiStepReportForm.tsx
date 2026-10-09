@@ -79,7 +79,7 @@ export const MultiStepReportForm: React.FC<MultiStepReportFormProps> = ({
   const [loadingLocations, setLoadingLocations] = useState(true);
 
   // Form State
-  const [formData, setFormData] = useState<CreateItemRequest>({
+  const [formData, setFormData] = useState<CreateItemRequest>(() => ({
     type: initialType,
     title: "",
     description: "",
@@ -95,7 +95,7 @@ export const MultiStepReportForm: React.FC<MultiStepReportFormProps> = ({
     image_url: "",
     verification_question: "",
     verification_answer: "",
-  });
+  }));
 
   const [confirmedAccurate, setConfirmedAccurate] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -110,13 +110,16 @@ export const MultiStepReportForm: React.FC<MultiStepReportFormProps> = ({
         const res = await itemsApi.getCampusLocations();
         if (res.success && res.data) {
           setLocations(res.data);
-          if (res.data.length > 0 && !formData.campus_location_id) {
-            setFormData((prev) => ({
-              ...prev,
-              campus_location_id: res.data[0].id,
-              latitude: res.data[0].latitude,
-              longitude: res.data[0].longitude,
-            }));
+          if (res.data.length > 0) {
+            setFormData((prev) => {
+              if (prev.campus_location_id) return prev;
+              return {
+                ...prev,
+                campus_location_id: res.data[0].id,
+                latitude: res.data[0].latitude,
+                longitude: res.data[0].longitude,
+              };
+            });
           }
         }
       } catch (err) {

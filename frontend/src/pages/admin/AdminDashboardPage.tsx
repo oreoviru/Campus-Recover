@@ -373,7 +373,7 @@ export const AdminDashboardPage: React.FC = () => {
         const statsRes = await adminApi.getStats();
         if (statsRes.success && statsRes.data) setStats(statsRes.data);
       }
-    } catch (err: any) {
+    } catch {
       showNotification("error", "Failed to dismiss flag.");
     }
   };

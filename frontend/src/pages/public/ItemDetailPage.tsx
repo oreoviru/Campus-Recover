@@ -201,7 +201,7 @@ export const ItemDetailPage: React.FC = () => {
     if (isValid(d)) {
       dateFormatted = format(d, "EEEE, MMMM d, yyyy 'at' h:mm a");
     }
-  } catch (e) {
+  } catch {
     dateFormatted = item.date_time;
   }
 
@@ -211,7 +211,7 @@ export const ItemDetailPage: React.FC = () => {
     if (isValid(d)) {
       reportedFormatted = format(d, "MMM d, yyyy");
     }
-  } catch (e) {
+  } catch {
     reportedFormatted = item.created_at;
   }
 

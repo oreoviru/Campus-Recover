@@ -6,6 +6,7 @@ Never hardcode secrets — use .env file or system environment variables.
 """
 
 from typing import List
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -37,6 +38,12 @@ class Settings(BaseSettings):
     # --- Security ---
     allowed_origins: str = "http://localhost:5173"
     allowed_email_domains: str = "student.university.edu.in,university.edu.in"
+    rate_limit_enabled: bool = True
+    rate_limit_global_per_minute: int = 150
+    rate_limit_login_per_minute: int = 10
+    rate_limit_register_per_minute: int = 10
+    rate_limit_claim_per_minute: int = 15
+    rate_limit_upload_per_minute: int = 20
 
     # --- Storage ---
     storage_backend: str = "local"
@@ -91,6 +98,16 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"
+
+    @model_validator(mode="after")
+    def validate_production_security(self) -> "Settings":
+        """Enforce strict production cryptographic keys and safety."""
+        if self.app_env.lower() == "production":
+            if "change-this" in self.jwt_secret_key.lower():
+                raise ValueError("CRITICAL SECURITY VIOLATION: Default jwt_secret_key cannot be used in production.")
+            if len(self.jwt_secret_key) < 32:
+                raise ValueError("CRITICAL SECURITY VIOLATION: jwt_secret_key must be at least 32 characters in production.")
+        return self
 
 
 # Singleton settings instance

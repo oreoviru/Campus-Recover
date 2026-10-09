@@ -4,7 +4,7 @@ Campus Recover — Item Schemas
 
 import uuid
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Any
 from pydantic import BaseModel, Field, ConfigDict, model_validator
 
 from app.models.enums import ItemType, ItemStatus, ItemCategory
@@ -88,8 +88,18 @@ class ItemResponse(ItemBase):
     campus_location: Optional[CampusLocationResponse] = None
 
     @classmethod
-    def from_orm_item(cls, item: Any) -> "ItemResponse":
-        """Convert ORM Item to ItemResponse, computing has_verification_question safely."""
+    def from_orm_item(cls, item: Any, include_email: bool = False) -> "ItemResponse":
+        """Convert ORM Item to ItemResponse, computing has_verification_question safely and masking reporter email."""
+        user_summary = None
+        if item.user:
+            user_summary = UserSummary(
+                id=item.user.id,
+                name=item.user.name,
+                email=item.user.email if include_email else None,
+                role=item.user.role,
+                profile_image=item.user.profile_image,
+            )
+
         return cls(
             id=item.id,
             user_id=item.user_id,
@@ -112,7 +122,7 @@ class ItemResponse(ItemBase):
             has_verification_question=bool(item.verification_question),
             created_at=item.created_at,
             updated_at=item.updated_at,
-            user=item.user,
+            user=user_summary,
             campus_location=item.campus_location,
         )
 

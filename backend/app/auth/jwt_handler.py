@@ -45,6 +45,8 @@ def decode_access_token(token: str) -> Dict[str, Any]:
         detail="Could not validate credentials or token has expired.",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    if not token or not isinstance(token, str):
+        raise credentials_exception
     try:
         payload = jwt.decode(
             token,

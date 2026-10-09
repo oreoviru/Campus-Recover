@@ -314,6 +314,20 @@ class AdminService:
                 detail=f"User with ID '{user_id}' not found.",
             )
 
+        # Security guard: never suspend the last active administrator
+        if not is_active and user.role == UserRole.ADMIN:
+            active_admins = db.scalar(
+                select(func.count(User.id)).where(
+                    User.role == UserRole.ADMIN,
+                    User.is_active == True,  # noqa: E712
+                )
+            ) or 0
+            if active_admins <= 1:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Cannot suspend the last active administrator account.",
+                )
+
         user.is_active = is_active
         db.commit()
         db.refresh(user)

@@ -20,6 +20,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
+from app.middleware.security_headers import SecurityHeadersMiddleware
+from app.middleware.rate_limit import RateLimitMiddleware
 from app.api.v1.items import router as items_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.upload import router as upload_router
@@ -57,12 +59,24 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# ---- Security Headers Middleware ----
+app.add_middleware(SecurityHeadersMiddleware)
+
+# ---- Rate Limiting Middleware ----
+app.add_middleware(
+    RateLimitMiddleware,
+    max_requests=settings.rate_limit_global_per_minute,
+    window_seconds=60,
+)
+
 # ---- CORS Middleware ----
+# Reject wildcard credentials if origins contains '*'
+allow_credentials = False if "*" in settings.allowed_origins_list else True
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins_list,
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_credentials=allow_credentials,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -82,6 +96,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     """Format HTTPExceptions into standard ApiErrorResponse."""
     return JSONResponse(
         status_code=exc.status_code,
+        headers=exc.headers,
         content={
             "success": False,
             "error": {
@@ -101,8 +116,9 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         field = ".".join(str(loc) for loc in err["loc"] if loc != "body")
         errors[field] = err["msg"]
 
+    status_code = getattr(status, "HTTP_422_UNPROCESSABLE_CONTENT", 422)
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=status_code,
         content={
             "success": False,
             "error": {

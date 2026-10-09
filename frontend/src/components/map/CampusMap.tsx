@@ -33,8 +33,8 @@ import {
 import { MapItemMarker, CampusLocation, CampusHotspot, ItemType } from "@/types";
 
 // Rishihood University Campus Center default (Sonipat, Haryana)
-export const DEFAULT_CAMPUS_CENTER: [number, number] = [28.9832, 77.0908];
-export const DEFAULT_CAMPUS_ZOOM = 17;
+export { DEFAULT_CAMPUS_CENTER, DEFAULT_CAMPUS_ZOOM } from "./mapConstants";
+import { DEFAULT_CAMPUS_CENTER } from "./mapConstants";
 
 // Custom HTML/SVG DivIcons to avoid broken asset URL issues in bundlers
 const createSvgIcon = (

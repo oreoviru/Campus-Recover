@@ -5,7 +5,7 @@
  * by the multi-modal neural matching engine (CLIP Vision + Sentence-Transformers + Geo/Time).
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   Sparkles,
@@ -28,7 +28,7 @@ export const MatchesPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<MatchStatus | undefined>(undefined);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     setLoading(true);
     try {
       const res = await matchesApi.getUserMatches(statusFilter);
@@ -40,11 +40,11 @@ export const MatchesPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter]);
 
   useEffect(() => {
     fetchMatches();
-  }, [statusFilter]);
+  }, [fetchMatches]);
 
   const handleConfirm = async (matchId: string) => {
     setActionLoading(true);

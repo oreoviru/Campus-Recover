@@ -16,6 +16,15 @@ from app.models.item import Item
 from app.models.enums import ItemType, ItemStatus, ItemCategory
 from app.schemas.item import ItemCreate, ItemUpdate
 from app.auth.password import hash_verification_answer
+from app.utils.sanitizer import sanitize_text
+
+ALLOWED_SORT_COLUMNS = {
+    "created_at": Item.created_at,
+    "date_time": Item.date_time,
+    "title": Item.title,
+    "updated_at": Item.updated_at,
+    "category": Item.category,
+}
 
 
 class ItemService:
@@ -34,22 +43,22 @@ class ItemService:
         db_item = Item(
             user_id=item_in.user_id,
             type=item_in.type,
-            title=item_in.title,
-            description=item_in.description,
+            title=sanitize_text(item_in.title) or item_in.title,
+            description=sanitize_text(item_in.description) or item_in.description,
             category=item_in.category,
-            subcategory=item_in.subcategory,
-            color=item_in.color,
-            brand=item_in.brand,
-            serial_number=item_in.serial_number,
-            distinguishing_marks=item_in.distinguishing_marks,
-            location_name=item_in.location_name,
+            subcategory=sanitize_text(item_in.subcategory),
+            color=sanitize_text(item_in.color),
+            brand=sanitize_text(item_in.brand),
+            serial_number=sanitize_text(item_in.serial_number),
+            distinguishing_marks=sanitize_text(item_in.distinguishing_marks),
+            location_name=sanitize_text(item_in.location_name),
             campus_location_id=item_in.campus_location_id,
             latitude=item_in.latitude,
             longitude=item_in.longitude,
             date_time=item_in.date_time,
             image_url=item_in.image_url,
             status=ItemStatus.ACTIVE,
-            verification_question=item_in.verification_question,
+            verification_question=sanitize_text(item_in.verification_question),
             verification_answer_hash=answer_hash,
         )
 
@@ -145,8 +154,9 @@ class ItemService:
         # Count total matching rows
         total = db.scalar(count_query) or 0
 
-        # Sorting
-        sort_column = getattr(Item, sort_by, Item.created_at)
+        # Sorting - enforce strict whitelist to prevent attribute probing or SQL quirks
+        sort_field = sort_by.lower() if sort_by else "created_at"
+        sort_column = ALLOWED_SORT_COLUMNS.get(sort_field, Item.created_at)
         order_func = desc if sort_order.lower() == "desc" else asc
         query = query.order_by(order_func(sort_column))
 
@@ -169,6 +179,12 @@ class ItemService:
             return None
 
         update_data = item_in.model_dump(exclude_unset=True)
+        # Sanitize text fields if present
+        text_fields = ["title", "description", "subcategory", "color", "brand", "serial_number", "distinguishing_marks", "location_name"]
+        for tf in text_fields:
+            if tf in update_data and update_data[tf] is not None:
+                update_data[tf] = sanitize_text(update_data[tf])
+
         if "title" in update_data or "description" in update_data:
             db_item.text_embedding = None
         if "image_url" in update_data:

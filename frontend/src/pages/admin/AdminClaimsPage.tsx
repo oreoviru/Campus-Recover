@@ -6,7 +6,7 @@
  * and handover authorizations.
  */
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { format, parseISO, isValid } from "date-fns";
 import {
@@ -50,7 +50,7 @@ export const AdminClaimsPage: React.FC = () => {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [actionSuccessMessage, setActionSuccessMessage] = useState<string | null>(null);
 
-  const fetchClaims = async () => {
+  const fetchClaims = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -69,11 +69,11 @@ export const AdminClaimsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchClaims();
-  }, []);
+  }, [fetchClaims]);
 
   // Compute summary metrics
   const stats = useMemo(() => {

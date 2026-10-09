@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useId } from "react";
 import { ChevronDown } from "lucide-react";
 
 export interface SelectOption {
@@ -28,7 +28,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     },
     ref
   ) => {
-    const selectId = id || props.name || Math.random().toString(36).substring(7);
+    const generatedId = useId();
+    const selectId = id || props.name || generatedId;
 
     return (
       <div className="w-full">

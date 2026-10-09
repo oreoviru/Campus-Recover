@@ -42,6 +42,15 @@ def db_session():
         session.close()
 
 
+@pytest.fixture(autouse=True)
+def reset_rate_limiter():
+    """Reset in-memory rate limiter state between tests."""
+    from app.middleware.rate_limit import limiter
+    limiter.reset()
+    yield
+    limiter.reset()
+
+
 @pytest.fixture
 def client(db_session):
     """Provide a FastAPI TestClient with get_db overridden to use test session."""

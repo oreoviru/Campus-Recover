@@ -16,6 +16,7 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.api.deps import get_db, get_current_user, require_admin
 from app.models.user import User
 from app.models.enums import ClaimStatus, UserRole
@@ -28,6 +29,7 @@ from app.schemas.claim import (
 from app.schemas.common import ApiResponse, PaginationMeta
 from app.services.claim_service import claim_service
 from app.services.item_service import item_service
+from app.middleware.rate_limit import rate_limit
 
 router = APIRouter(prefix="/claims", tags=["Claims"])
 
@@ -55,6 +57,7 @@ def get_verification_prompt(
     response_model=ApiResponse[ClaimResponse],
     status_code=status.HTTP_201_CREATED,
     summary="Submit an ownership claim on a found item",
+    dependencies=[Depends(rate_limit(settings.rate_limit_claim_per_minute, 60, "claim_submit"))],
 )
 def create_claim(
     claim_in: ClaimCreate,

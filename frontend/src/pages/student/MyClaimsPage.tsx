@@ -6,7 +6,7 @@
  * 2. Incoming claims received on items the current student found and reported
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { format, parseISO, isValid } from "date-fns";
 import {
@@ -37,7 +37,7 @@ export const MyClaimsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<ClaimStatus | undefined>(undefined);
 
-  const fetchClaims = async () => {
+  const fetchClaims = useCallback(async () => {
     setLoading(true);
     try {
       let res;
@@ -55,11 +55,11 @@ export const MyClaimsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, statusFilter]);
 
   useEffect(() => {
     fetchClaims();
-  }, [activeTab, statusFilter]);
+  }, [fetchClaims]);
 
   const pendingCount = claims.filter((c) => c.status === ClaimStatus.PENDING).length;
 

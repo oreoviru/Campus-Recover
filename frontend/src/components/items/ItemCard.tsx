@@ -59,7 +59,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     if (isValid(parsedDate)) {
       timeAgo = formatDistanceToNow(parsedDate, { addSuffix: true });
     }
-  } catch (e) {
+  } catch {
     timeAgo = "Recently";
   }
 

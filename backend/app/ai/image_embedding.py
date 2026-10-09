@@ -76,35 +76,47 @@ class ImageEmbeddingService:
     def resolve_image_path(self, path_str: str) -> Optional[Path]:
         """
         Locates image file on disk, handling relative /uploads URLs, relative paths,
-        and absolute file system paths.
+        and absolute file system paths with strict path traversal containment.
         """
         if not path_str or not isinstance(path_str, str):
             return None
 
         clean_path = path_str.strip()
+        upload_base = Path(settings.upload_dir).resolve()
 
         # Handle API upload URL format (e.g., '/uploads/filename.jpg')
         if clean_path.startswith("/uploads/"):
-            filename = clean_path.replace("/uploads/", "")
-            target = Path(settings.upload_dir) / filename
-            if target.exists() and target.is_file():
+            filename = os.path.basename(clean_path.replace("/uploads/", ""))
+            target = (upload_base / filename).resolve()
+            if target.is_relative_to(upload_base) and target.exists() and target.is_file():
                 return target
 
         if clean_path.startswith("uploads/"):
-            filename = clean_path.replace("uploads/", "")
-            target = Path(settings.upload_dir) / filename
-            if target.exists() and target.is_file():
+            filename = os.path.basename(clean_path.replace("uploads/", ""))
+            target = (upload_base / filename).resolve()
+            if target.is_relative_to(upload_base) and target.exists() and target.is_file():
                 return target
 
         # Direct path check
-        direct = Path(clean_path)
-        if direct.exists() and direct.is_file():
-            return direct
+        try:
+            direct = Path(clean_path).resolve()
+            if settings.is_production:
+                # In production, strictly enforce containment inside uploads directory
+                if direct.is_relative_to(upload_base) and direct.exists() and direct.is_file():
+                    return direct
+            else:
+                # In development and testing, allow existing files (such as tempfiles in test suites)
+                if direct.exists() and direct.is_file():
+                    return direct
+        except Exception:
+            pass
 
-        # Relative to project or upload dir
-        relative_upload = Path(settings.upload_dir) / os.path.basename(clean_path)
-        if relative_upload.exists() and relative_upload.is_file():
-            return relative_upload
+        # Relative to project or upload dir (using basename only to prevent traversal)
+        basename = os.path.basename(clean_path)
+        if basename:
+            relative_upload = (upload_base / basename).resolve()
+            if relative_upload.is_relative_to(upload_base) and relative_upload.exists() and relative_upload.is_file():
+                return relative_upload
 
         return None
 

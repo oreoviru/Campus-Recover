@@ -5,6 +5,7 @@ Campus Recover — Authentication API Routes
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.api.deps import get_db, get_current_user, require_admin
 from app.models.user import User
 from app.schemas.auth import UserRegister, UserLogin, Token
@@ -12,6 +13,7 @@ from app.schemas.user import UserResponse
 from app.schemas.common import ApiResponse
 from app.services.auth_service import auth_service
 from app.auth.jwt_handler import create_access_token
+from app.middleware.rate_limit import rate_limit
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -21,6 +23,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     response_model=ApiResponse[Token],
     status_code=status.HTTP_201_CREATED,
     summary="Register a new student or staff account",
+    dependencies=[Depends(rate_limit(settings.rate_limit_register_per_minute, 60, "register"))],
 )
 def register(
     register_data: UserRegister,
@@ -57,6 +60,7 @@ def register(
     "/login",
     response_model=ApiResponse[Token],
     summary="Login with institutional email and password",
+    dependencies=[Depends(rate_limit(settings.rate_limit_login_per_minute, 60, "login"))],
 )
 def login(
     login_data: UserLogin,

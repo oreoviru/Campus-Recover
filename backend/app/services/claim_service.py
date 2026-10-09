@@ -31,6 +31,7 @@ from app.schemas.claim import (
     ClaimVerificationPrompt,
 )
 from app.schemas.item import ItemResponse
+from app.utils.sanitizer import sanitize_text
 
 
 class ClaimService:
@@ -98,13 +99,16 @@ class ClaimService:
                 detail="You already have an active pending claim under review for this item.",
             )
 
+        # Sanitize submitted answer against XSS/script injection
+        cleaned_answer = sanitize_text(claim_in.submitted_answer) or claim_in.submitted_answer.strip()
+
         # Initialize claim
         new_claim = Claim(
             item_id=item.id,
             claimant_id=claimant.id,
             verification_question=item.verification_question,
             verification_answer_hash=item.verification_answer_hash,
-            submitted_answer=claim_in.submitted_answer.strip(),
+            submitted_answer=cleaned_answer,
             status=ClaimStatus.PENDING,
             admin_notes=None,
         )
@@ -276,7 +280,7 @@ class ClaimService:
         claim.status = review_in.status
         notes = review_in.admin_notes or review_in.review_notes
         if notes:
-            claim.admin_notes = notes.strip()
+            claim.admin_notes = sanitize_text(notes.strip())
 
         claim.updated_at = datetime.now(timezone.utc)
 

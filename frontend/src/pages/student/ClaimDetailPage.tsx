@@ -9,7 +9,7 @@
  * - Administrative override controls
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { format, parseISO, isValid } from "date-fns";
 import {
@@ -54,7 +54,7 @@ export const ClaimDetailPage: React.FC = () => {
   const [recoveredModalOpen, setRecoveredModalOpen] = useState(false);
   const [submittingRecovered, setSubmittingRecovered] = useState(false);
 
-  const fetchClaim = async () => {
+  const fetchClaim = useCallback(async () => {
     if (!claimId) return;
     setLoading(true);
     setError(null);
@@ -74,11 +74,11 @@ export const ClaimDetailPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [claimId]);
 
   useEffect(() => {
     fetchClaim();
-  }, [claimId]);
+  }, [fetchClaim]);
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -16,7 +16,7 @@ class UserSummary(BaseModel):
 
     id: uuid.UUID
     name: str
-    email: EmailStr
+    email: Optional[EmailStr] = None
     role: UserRole
     profile_image: Optional[str] = None
 
