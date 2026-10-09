@@ -24,22 +24,33 @@ export const RegisterPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { register } = useAuth();
+  const { register, authError, clearError } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    clearError();
+
+    if (!name.trim()) {
+      setErrorMessage("Please enter your full name.");
+      return;
+    }
 
     if (!isInstitutionalEmail(email)) {
       setErrorMessage("Please use your official college email (@nst.rishihood.edu.in or @rishihood.edu.in).");
       return;
     }
 
+    if (password.length < 6) {
+      setErrorMessage("Password must be at least 6 characters.");
+      return;
+    }
+
     setIsSubmitting(true);
     const success = await register({
-      name,
-      email,
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
       password,
       role,
       student_id: studentId.trim() || undefined,
@@ -48,8 +59,6 @@ export const RegisterPage: React.FC = () => {
 
     if (success) {
       navigate("/dashboard");
-    } else {
-      setErrorMessage("Registration could not be completed. Check institutional domain and details.");
     }
   };
 
@@ -75,9 +84,9 @@ export const RegisterPage: React.FC = () => {
           </CardHeader>
 
           <CardContent className="pt-2">
-            {errorMessage && (
+            {(errorMessage || authError) && (
               <div className="mb-6 p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-danger-400 text-xs sm:text-sm text-center">
-                {errorMessage}
+                {errorMessage || authError}
               </div>
             )}
 

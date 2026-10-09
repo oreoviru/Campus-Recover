@@ -36,7 +36,9 @@ class Settings(BaseSettings):
     refresh_token_expire_days: int = 7
 
     # --- Security ---
-    allowed_origins: str = "http://localhost:5173"
+    allowed_origins: str = (
+        "http://localhost:5173,https://campusrecovery.vercel.app,https://campus-recovery-app.vercel.app"
+    )
     allowed_email_domains: str = (
         "rishihood.edu.in,nst.rishihood.edu.in,student.university.edu,university.edu"
     )

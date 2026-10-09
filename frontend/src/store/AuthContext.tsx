@@ -12,9 +12,11 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  authError: string | null;
   login: (data: LoginRequest) => Promise<boolean>;
   register: (data: RegisterRequest) => Promise<boolean>;
   logout: () => void;
+  clearError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,6 +25,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("access_token"));
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  const clearError = useCallback(() => setAuthError(null), []);
 
   // Initialize auth state by validating existing token
   useEffect(() => {
@@ -53,6 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = useCallback(async (data: LoginRequest): Promise<boolean> => {
     setIsLoading(true);
+    setAuthError(null);
     try {
       const res = await authApi.login(data);
       if (res.success && res.data) {
@@ -65,7 +71,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return false;
     } catch (err: any) {
-      const msg = err.response?.data?.error?.message || "Login failed. Please check your credentials.";
+      const msg =
+        err.response?.data?.error?.message ||
+        err.response?.data?.detail ||
+        (err.code === "ERR_NETWORK" || err.message === "Network Error"
+          ? "Cannot connect to server. Please verify backend is running."
+          : err.message) ||
+        "Login failed. Please check your credentials.";
+      setAuthError(msg);
       toast.error(msg);
       return false;
     } finally {
@@ -75,6 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = useCallback(async (data: RegisterRequest): Promise<boolean> => {
     setIsLoading(true);
+    setAuthError(null);
     try {
       const res = await authApi.register(data);
       if (res.success && res.data) {
@@ -87,7 +101,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return false;
     } catch (err: any) {
-      const msg = err.response?.data?.error?.message || "Registration failed. Please check your details.";
+      const msg =
+        err.response?.data?.error?.message ||
+        err.response?.data?.detail ||
+        (err.code === "ERR_NETWORK" || err.message === "Network Error"
+          ? "Cannot connect to server. Please verify backend is running."
+          : err.message) ||
+        "Registration failed. Please check your details.";
+      setAuthError(msg);
       toast.error(msg);
       return false;
     } finally {
@@ -110,9 +131,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     token,
     isLoading,
     isAuthenticated: Boolean(token && user),
+    authError,
     login,
     register,
     logout,
+    clearError,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

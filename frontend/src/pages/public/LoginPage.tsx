@@ -18,7 +18,7 @@ export const LoginPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { login } = useAuth();
+  const { login, authError, clearError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,15 +27,14 @@ export const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    clearError();
     setIsSubmitting(true);
 
-    const success = await login({ email, password });
+    const success = await login({ email: email.trim().toLowerCase(), password });
     setIsSubmitting(false);
 
     if (success) {
       navigate(from, { replace: true });
-    } else {
-      setErrorMessage("Authentication failed. Please verify your email and password.");
     }
   };
 
@@ -67,9 +66,9 @@ export const LoginPage: React.FC = () => {
           </CardHeader>
 
           <CardContent className="pt-2">
-            {errorMessage && (
+            {(errorMessage || authError) && (
               <div className="mb-6 p-3 rounded-xl bg-danger-500/10 border border-danger-500/30 text-danger-400 text-xs sm:text-sm text-center">
-                {errorMessage}
+                {errorMessage || authError}
               </div>
             )}
 
