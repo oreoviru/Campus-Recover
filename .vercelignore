@@ -1,0 +1,7 @@
+backend/venv/
+backend/.venv/
+*.db
+*.sqlite3
+.pytest_cache/
+coverage/
+uploads/
