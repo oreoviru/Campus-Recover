@@ -1,0 +1,15 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+venv
+.venv
+env
+.env
+campus_recover.db
+uploads/*
+!uploads/.gitkeep
+.coverage
+htmlcov
+.DS_Store

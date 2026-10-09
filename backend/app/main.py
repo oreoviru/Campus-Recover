@@ -80,8 +80,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---- Static file serving for uploads (development only) ----
-if settings.is_development:
+# ---- Static file serving for uploads (local storage) ----
+if settings.storage_backend == "local" or settings.is_development:
     os.makedirs(settings.upload_dir, exist_ok=True)
     app.mount(
         "/uploads",
